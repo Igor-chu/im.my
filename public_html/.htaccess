@@ -1,0 +1,12 @@
+#не изолировать символы (ковычки)
+php_flag magic_quotes_gpc Off
+#сказали серверу в какой кодировке работать
+AddDefaultCharset utf-8
+
+DirectoryIndex index.php
+#включаем директиву
+RewriteEngine on
+#при запросе со стороны пользователя вернуть, то, что в RewriteRule (создание единой точки входа на сайт)
+RewriteCond %{REQUEST_FILENAME} !-f
+#работать только с index.php
+RewriteRule ^(.*) index.php
