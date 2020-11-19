@@ -1,7 +1,9 @@
 <?php
 
 namespace core\base\controllers;
+
 use core\base\settings\Settings;
+use core\base\settings\ShopSettings;
 
 class RouteController
 {
@@ -13,16 +15,18 @@ class RouteController
     }
 //шаблон программирования singltone
     static public function getInstance(){
-        //если в свойствве $_instance храниться объект класса то возвращаем
+        //проверяем хранится ли в свойствве $_instance объект класса  то возвращаем этот объект
         if(self::$_instance instanceof self){
             return self::$_instance;
         }
-        //создаем объект
+        //если не, то создаем объект класса  и записываем его в свойство $_instance
         return self::$_instance = new self;
     }
     private function __construct()
     {
-        $s = Settings::get('routes');
+        $s = Settings::instance();
+        $s1 = ShopSettings::instance();
+
         exit();
     }
 }
