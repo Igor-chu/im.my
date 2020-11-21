@@ -55,8 +55,45 @@ class RouteController
             if(!$this->routes) throw new RouteException('Сайт находится на техническом обслуживании');
 
             //если в строке запроса присутствует admin, то работаем с админкой
-            if(strrpos($adress_str, $this->routes['admin']['alias']) === strlen(PATH)){
-                /* Админка */
+            //strpos — Возвращает позицию первого вхождения подстроки
+            if(strpos($adress_str, $this->routes['admin']['alias']) === strlen(PATH)){
+                //записываем в $url строку запроса предварительно обрезав '/admin/'
+                $url = explode('/', substr($adress_str, strlen(PATH . $this->routes['admin']['alias']) + 1));
+                //проверяем существует что-либо после '/admin/' т.е. существует ли плагин и существует ли дирректория по заданному имени (
+                //is_dir — Определяет, является ли имя файла директорией
+                if($url[0] && is_dir($_SERVER['DOCUMENT_ROOT'] . PATH . $this->routes['plugins']['path'] . $url[0])){
+                    //array_shift() извлекает первое значение массива array и возвращает его, сокращая размер array на один элемент
+                    $plugin = array_shift($url);
+                    //записываем в $pluginSettings путь файла настроек  для плагина предварительно сформировав его
+                    $pluginSettings = $this->routes['settings']['path'] . ucfirst($plugin . 'Settings');
+                    //проверяем существует ли файл по заданному пути
+                    if(file_exists($_SERVER['DOCUMENT_ROOT'] . PATH . $pluginSettings . 'php')){
+                        //переопределяем $pluginSettings, потому что не можем создать объект с "/", поэтому заменяем все'/' на '\'
+                        $pluginSettings = str_replace('/', '\\', $pluginSettings);
+                        //перезапишем в $this->routes новые настрой с учетом плагина
+                        $this->routes = $pluginSettings::get('routes');
+                    }
+                    //
+                    $dir = $this->routes['plugins']['dir'] ? '/' . $this->routes['plugins']['dir'] . '/' : '/';
+                    //вслучае наличия, заменяем // на /
+                    $dir = str_replace('//', '/', $dir);
+
+                    $this->controller = $this->routes['plugins']['path'] . $plugin . $dir;
+                    //записываем в свойство $hrURL значение из класса Settings
+                    $hrUrl = $this->routes['plugins']['hrURL'];
+                    //форируем ячейку маршрута
+                    $route = 'plugins';
+
+                }else{
+                    //записываем в свойство $controller значение из класса Settings
+                    $this->controller = $this->routes['admin']['path'];
+                    //записываем в свойство $hrURL значение из класса Settings
+                    $hrUrl = $this->routes['admin']['hrURL'];
+                    //форируем ячейку маршрута
+                    $route = 'admin';
+
+
+                }
                 //если нет, то работаем с пользовательским контроллером
             }else{
                 //преобразуем строку запроса ($adress_str) в массив, обрезая ее (substr) с первого элемента (strlen(PATH))
@@ -70,7 +107,33 @@ class RouteController
             }
             //создаем метод который будет
             $this->createRoute($route, $url);
-            var_dump($url);
+            //
+            if($url[1]){
+                //записываем количество элементов в массиве $url
+                $count = count($url);
+
+                $key = '';
+                //если в переменной $hrUrl - false
+                if(!$hrUrl){
+                    //
+                    $i = 1;
+                }else{
+                    $this->parameters['alias'] = $url[1];
+                    $i = 2;
+                }
+
+                for( ; $i < $count; $i++){
+                    if(!$key){
+                        //записываем в $key первый элемент строки запроса
+                        $key = $url[$i];
+                        //записываем в свойство $parameters  с ключом $key
+                        $this->parameters[$key] = '';
+                    }else{
+                        $this->parameters[$key] = $url[$i];
+                        $key = '';
+                    }
+                }
+            }
             exit();
         }else{
             try{

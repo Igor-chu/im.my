@@ -11,12 +11,15 @@ class ShopSettings
     private $baseSettings;
 
     private $routes = [
-        'admin' => [
-            'name' => 'sudo',
+
+        'plugins' => [
+            'path' => 'core/plugins/',
+            'hrUrl' => false,
+            'dir' => 'controller',
+            'routes' => [
+
+            ]
         ],
-        'vasya' => [
-            'name' => 'vasya'
-        ]
     ];
 
     private $teplateArr = [
